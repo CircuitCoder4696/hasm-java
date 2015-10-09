@@ -10,22 +10,14 @@ import java.util.*;
 
 public class Assemble
 {
-    // throw an error, print message and filename/line number if applicable
-    public static void error(String message, String fileName, int lineNum)
-    {
-        System.out.println("Error: " + fileName + ":" + lineNum + ":\n" + message);
-        System.exit(1);
-    }
-    public static void error(String message)
-    {
-        System.out.println("Error: " + message);
-        System.exit(1);
-    }
+    private static String inputFile;
+    private static PrintWriter out;
+    private static SymbolTable table = new SymbolTable();
 
     // first pass of the assembler
     // go through file building the symbol table
     // only labels are handled, variables are handeled in the 2nd pass
-    public static void assemble1(String inputFile, SymbolTable table) throws FileNotFoundException, IOException
+    public static void assemble1() throws FileNotFoundException, IOException
     {
         Parser parser = new Parser(inputFile);
         int romAddress = 0;
@@ -50,7 +42,7 @@ public class Assemble
     // 2nd pass of the assembler
     // handle variables
     // generate code, replace symbols with values from symbol table
-    public static void assemble2(String inputFile, SymbolTable table) throws FileNotFoundException, IOException
+    public static void assemble2() throws FileNotFoundException, IOException
     {
         Parser parser = new Parser(inputFile);
         String dest, comp, jump;
@@ -66,7 +58,7 @@ public class Assemble
                 comp = parser.comp();
                 jump = parser.jump();
                 
-                System.out.println("111" + Code.comp(comp) + Code.dest(dest) + Code.jump(jump));
+                out.println("111" + Code.comp(comp) + Code.dest(dest) + Code.jump(jump));
             } else if (parser.commandType() == Parser.CommandType.A_COMMAND)
             {
                 symbol = parser.symbol();
@@ -86,7 +78,7 @@ public class Assemble
                     ramAddress++;
                 }
 
-                System.out.println("0" + value);
+                out.println("0" + value);
             }
         }
         
@@ -97,17 +89,17 @@ public class Assemble
     {
         // must specify file to assemble
         if (args.length != 1)
-            error("please specify a file to assemble");
+            Error.error("please specify a file to assemble");
         
         // input file, get ready to parse
-        String inputFile = args[0];
+        inputFile = args[0];
         // create and initialize a symbol table
-        SymbolTable table = new SymbolTable();
         table.initialize();
         // output file
         String outputFile = inputFile.replaceAll("\\..*", "") + ".hack";
+        out = new PrintWriter(new FileWriter(outputFile));
 
-        assemble1(inputFile, table);
-        assemble2(inputFile, table);
+        assemble1();
+        assemble2();
     }
 }

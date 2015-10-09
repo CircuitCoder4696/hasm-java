@@ -22,7 +22,7 @@ public class Code
 
         if ((d1+d2+d3).equals("000") && !mnemnonic.equals(""))
         {
-            Assemble.error("invalid dest field");
+            Error.error("invalid dest field");
         }
         
         return d1 + d2 + d3;
@@ -76,7 +76,7 @@ public class Code
                         break;
             case "D|A": c = "010101";
                         break;
-            default:    Assemble.error("invalid comp field");
+            default:    Error.error("invalid comp field");
         }
 
         return a + c;
@@ -95,7 +95,7 @@ public class Code
             case "JNE": return "101";
             case "JLE": return "110";
             case "JMP": return "111";
-            default:    Assemble.error("invalid jump mnemnonic");
+            default:    Error.error("invalid jump mnemnonic");
                         return "";
         }
     }
