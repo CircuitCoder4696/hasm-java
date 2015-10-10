@@ -8,7 +8,7 @@
 public class Code
 {
     // returns binary code (3 bits) of dest mnemnonic
-    public static String dest(String mnemnonic)
+    public static String dest(String mnemnonic) throws InvalidDestException
     {
         String d1 = "0";
         String d2 = "0";
@@ -22,14 +22,14 @@ public class Code
 
         if ((d1+d2+d3).equals("000") && !mnemnonic.equals(""))
         {
-            Error.error("invalid dest field");
+            throw new InvalidDestException();
         }
         
         return d1 + d2 + d3;
     }
 
     // returns binary code (7 bits) of comp mnemnonic
-    public static String comp(String mnemnonic)
+    public static String comp(String mnemnonic) throws InvalidCompException
     {
         String a = "0";
         if (mnemnonic.contains("M"))
@@ -76,14 +76,14 @@ public class Code
                         break;
             case "D|A": c = "010101";
                         break;
-            default:    Error.error("invalid comp field");
+            default:    throw new InvalidCompException();
         }
 
         return a + c;
     }
 
     // returns binary code (3 bits) of jump mnemnonic
-    public static String jump(String mnemnonic)
+    public static String jump(String mnemnonic) throws InvalidJumpException
     {
         switch (mnemnonic)
         {
@@ -95,8 +95,7 @@ public class Code
             case "JNE": return "101";
             case "JLE": return "110";
             case "JMP": return "111";
-            default:    Error.error("invalid jump mnemnonic");
-                        return "";
+            default:    throw new InvalidJumpException();
         }
     }
 

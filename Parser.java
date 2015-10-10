@@ -13,11 +13,11 @@ public class Parser
     public String inputFile;
     // current line number in the file
     public int lineNumber = 0;
+    // current line in file
+    public String currentLine;
 
     // input file reader
     private BufferedReader fileReader;
-    // current line in file
-    private String currentLine;
 
     // command types
     enum CommandType {
@@ -120,5 +120,12 @@ public class Parser
             jump = array[1];
         }
         return jump;
+    }
+
+    // close input file
+    public void close() throws IOException
+    {
+        fileReader.close();
+        return;
     }
 }

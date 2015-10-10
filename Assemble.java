@@ -1,8 +1,6 @@
 /**
  * Assemble class for the Hack assembler
  *
- * TODO: fix error handling, possibly add more features (macros, preprocessor commands)
- *
  */
 
 import java.io.*;
@@ -10,14 +8,26 @@ import java.util.*;
 
 public class Assemble
 {
-    private static String inputFile;
-    private static PrintWriter out;
-    private static SymbolTable table = new SymbolTable();
+    // input and output files
+    private String inputFile;
+    private PrintWriter out;
+    // symbol table for variables / labels
+    private SymbolTable table = new SymbolTable();
+
+    public Assemble(String file) throws IOException
+    {
+        // define input / output files
+        inputFile = file;
+        String outputFile = inputFile.replaceAll("\\..*", "") + ".hack";
+        out = new PrintWriter(new FileWriter(outputFile));
+        // initialize symbol table
+        table.initialize();
+    }
 
     // first pass of the assembler
     // go through file building the symbol table
     // only labels are handled, variables are handeled in the 2nd pass
-    public static void assemble1() throws FileNotFoundException, IOException
+    public void assemble1() throws FileNotFoundException, IOException
     {
         Parser parser = new Parser(inputFile);
         int romAddress = 0;
@@ -35,14 +45,14 @@ public class Assemble
                 romAddress++;
             }
         }
-
+        parser.close();
         return;
     }
 
     // 2nd pass of the assembler
     // handle variables
     // generate code, replace symbols with values from symbol table
-    public static void assemble2() throws FileNotFoundException, IOException
+    public void assemble2() throws FileNotFoundException, IOException
     {
         Parser parser = new Parser(inputFile);
         String dest, comp, jump;
@@ -52,54 +62,55 @@ public class Assemble
 
         while (parser.advance())
         {
-            if (parser.commandType() == Parser.CommandType.C_COMMAND)
+            try
             {
-                dest = parser.dest();
-                comp = parser.comp();
-                jump = parser.jump();
+                if (parser.commandType() == Parser.CommandType.C_COMMAND)
+                {
+                    dest = parser.dest();
+                    comp = parser.comp();
+                    jump = parser.jump();
                 
-                out.println("111" + Code.comp(comp) + Code.dest(dest) + Code.jump(jump));
-            } else if (parser.commandType() == Parser.CommandType.A_COMMAND)
-            {
-                symbol = parser.symbol();
-                if (Character.isDigit(symbol.charAt(0)))
+                    out.println("111" + Code.comp(comp) + Code.dest(dest) + Code.jump(jump));
+                } else if (parser.commandType() == Parser.CommandType.A_COMMAND)
                 {
-                    value = Code.toBinary(symbol);
-                }
-                else if (table.contains(symbol))
-                {
-                    value = Integer.toString(table.getAddress(symbol));
-                    value = Code.toBinary(value);
-                }
-                else
-                {
-                    table.addEntry(symbol, ramAddress);
-                    value = Code.toBinary("" + ramAddress);
-                    ramAddress++;
-                }
+                    symbol = parser.symbol();
+                    if (Character.isDigit(symbol.charAt(0)))
+                    {
+                        value = Code.toBinary(symbol);
+                    }
+                    else if (table.contains(symbol))
+                    {
+                        value = Integer.toString(table.getAddress(symbol));
+                        value = Code.toBinary(value);
+                    }
+                    else
+                    {
+                        table.addEntry(symbol, ramAddress);
+                        value = Code.toBinary("" + ramAddress);
+                        ramAddress++;
+                    }
 
-                out.println("0" + value);
+                    out.println("0" + value);
+                }
+            }
+            catch (InvalidDestException ex) {
+                Error.error("Invalid destination", inputFile, parser.lineNumber, parser.currentLine);
+            }
+            catch (InvalidCompException ex) {
+                Error.error("Invalid computation", inputFile, parser.lineNumber, parser.currentLine);
+            }
+            catch (InvalidJumpException ex) {
+                Error.error("Invalid jump", inputFile, parser.lineNumber, parser.currentLine);
             }
         }
-        
+        parser.close();
         return;
     }
 
-    public static void main(String[] args) throws FileNotFoundException, IOException
+    // close output file
+    public void close() throws IOException
     {
-        // must specify file to assemble
-        if (args.length != 1)
-            Error.error("please specify a file to assemble");
-        
-        // input file, get ready to parse
-        inputFile = args[0];
-        // create and initialize a symbol table
-        table.initialize();
-        // output file
-        String outputFile = inputFile.replaceAll("\\..*", "") + ".hack";
-        out = new PrintWriter(new FileWriter(outputFile));
-
-        assemble1();
-        assemble2();
+        out.close();
+        return;
     }
 }
