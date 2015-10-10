@@ -5,11 +5,13 @@ This is an assembler written for the Hack computer designed in the book *The Ele
 
 ### Compiling
 ```
-javac Parser.java Code.java Assemble.java SymbolTable.java
+$ make
 ```
 
 ### Usage
 ```
-java Assemble file.asm
+java Hasm file.asm
 ```
+
+Assembled file is `file.hack`.
 
