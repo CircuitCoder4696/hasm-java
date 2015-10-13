@@ -43,6 +43,9 @@ public class Assemble
             } else
             {
                 romAddress++;
+                // print warning when memory is all used
+                if (romAddress > 32768)
+                    System.err.println("Warning: all ROM is in use");
             }
         }
         parser.close();
@@ -85,6 +88,12 @@ public class Assemble
                     }
                     else
                     {
+                        // print warnings about memory usage
+                        if (ramAddress > 16383)
+                            System.err.println("Warning: allocating variable in I/O memory map");
+                        if (ramAddress > 24576)
+                            System.err.println("Warning: no more RAM left");
+
                         table.addEntry(symbol, ramAddress);
                         value = Code.toBinary("" + ramAddress);
                         ramAddress++;
